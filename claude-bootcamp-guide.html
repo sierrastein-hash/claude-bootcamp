@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>the claude bootcamp</title>
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/regular/style.css" />
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,700&family=DM+Sans:wght@400;500;700&display=swap');
+
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#faf7f2;--card:#fff;--sand:#f5f0ea;
+  --t1:#2d2a26;--t2:#6b6560;--t3:#8a8580;--t4:#a8a29e;--tf:#b8b3ad;
+  --bdr:#eee8e0;--bdrd:#d4cfc8;
+  --mint-bg:#d1fae5;--mint:#065f46;
+  --yellow-bg:#fef3c7;--yellow:#92400e;
+  --purple-bg:#ede9fe;--purple:#5b21b6;
+  --blue-bg:#dbeafe;--blue:#1e40af;
+  --orange-bg:#ffedd5;--orange:#9a3412;
+  --pink-bg:#fce7f3;--pink:#9d174d;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);line-height:1.6;-webkit-font-smoothing:antialiased;min-height:100vh;display:flex;flex-direction:column}
+
+.shell{max-width:780px;width:100%;margin:0 auto;flex:1;display:flex;flex-direction:column;padding:0 24px}
+header{text-align:center;padding:40px 0 20px}
+header h1{font-family:'Fraunces',serif;font-size:28px;font-weight:700;margin-bottom:2px}
+header .sub{font-size:13px;color:var(--t3)}
+
+nav{display:flex;gap:4px;overflow-x:auto;padding:0 0 2px;margin-bottom:24px;border-bottom:2px solid var(--bdr);-webkit-overflow-scrolling:touch;scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+nav button{background:none;border:none;font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:500;color:var(--t3);padding:10px 12px;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;margin-bottom:-2px;transition:color .15s,border-color .15s;border-radius:0}
+nav button:hover{color:var(--t1)}
+nav button.active{color:var(--purple);border-bottom-color:var(--purple);font-weight:700}
+
+.page{display:none;animation:fadeIn .25s ease}
+.page.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+.pn{display:flex;justify-content:space-between;align-items:center;padding:24px 0 16px;margin-top:28px;border-top:1px solid var(--bdr)}
+.pn button{background:var(--purple);color:#fff;border:none;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:10px 22px;border-radius:20px;cursor:pointer;transition:background .15s}
+.pn button:hover{background:#4c1d95}
+.pn button.sec{background:var(--card);color:var(--t2);border:1.5px solid var(--bdrd)}
+.pn button.sec:hover{background:var(--sand)}
+.pn .sp{flex:1}
+
+.pbar{height:3px;background:var(--bdr);border-radius:2px;margin-bottom:20px;overflow:hidden}
+.pfill{height:100%;background:var(--purple);border-radius:2px;transition:width .3s ease}
+
+.sh{margin-bottom:20px}
+.sh .bar{width:48px;height:3px;border-radius:2px;margin-bottom:10px}
+.sh h2{font-family:'Fraunces',serif;font-size:26px;font-weight:700;line-height:1.25;margin-bottom:3px}
+.sh .sub{font-size:13px;color:var(--t3)}
+.intro{font-size:14px;color:var(--t2);margin-bottom:18px;line-height:1.65}
+
+.c{background:var(--card);border:1px solid var(--bdr);border-radius:12px;padding:20px 22px;margin-bottom:14px}
+.c .hdr{display:flex;align-items:center;gap:11px;margin-bottom:8px}
+.c .num{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0}
+.c h3{font-size:15px;font-weight:700}
+.c .bod{font-size:13.5px;color:var(--t2);line-height:1.65;margin-bottom:10px}
+.c .bod:last-child{margin-bottom:0}
+
+.pb{background:var(--sand);border-radius:8px;padding:12px 16px;margin-bottom:8px}
+.pb .lbl{font-size:10px;font-weight:700;color:var(--t3);margin-bottom:5px}
+.pb .txt{font-size:12.5px;font-style:italic;color:var(--purple);line-height:1.6}
+
+.tb{border-radius:8px;padding:12px 16px;font-size:12.5px;line-height:1.6;margin-top:8px}
+
+.pro{display:inline-block;font-size:9px;font-weight:700;background:var(--purple-bg);color:var(--purple);padding:2px 7px;border-radius:4px;margin-left:6px;vertical-align:middle}
+
+/* model strip */
+.mstrip{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px}
+.ms{background:var(--card);border:1px solid var(--bdr);border-radius:10px;padding:14px;text-align:center;border-top:3px solid}
+.ms h4{font-family:'Fraunces',serif;font-size:15px;margin-bottom:1px}
+.ms .sp{font-size:11px;font-weight:700;margin-bottom:4px}
+.ms .d{font-size:11.5px;color:var(--t2);line-height:1.45}
+
+/* 3-col compare */
+.compare{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:16px}
+.cc{background:var(--card);border:1px solid var(--bdr);border-radius:12px;padding:20px;border-top:3px solid}
+.cc h3{font-family:'Fraunces',serif;font-size:17px;margin-bottom:4px}
+.cc .tag{font-size:11px;font-weight:700;margin-bottom:10px}
+.cc .desc{font-size:12.5px;color:var(--t2);line-height:1.55;margin-bottom:10px}
+.cc ul{list-style:none;padding:0;margin:0}
+.cc li{font-size:12px;color:var(--t2);padding:4px 0;padding-left:16px;position:relative}
+.cc li::before{content:'→';position:absolute;left:0;color:var(--t3)}
+
+/* superpower grid */
+.spgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.spcard{background:var(--card);border:1px solid var(--bdr);border-radius:12px;padding:18px;border-left:3px solid}
+.spcard h4{font-size:14px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.spcard .d{font-size:12px;color:var(--t2);line-height:1.55;margin-bottom:6px}
+.spcard .where{font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;display:inline-block}
+
+/* timeline */
+.tl{position:relative;margin:20px 0 20px 20px;padding-left:28px;border-left:2px solid var(--bdr)}
+.tl-item{position:relative;padding-bottom:24px}
+.tl-item:last-child{padding-bottom:0}
+.tl-icon{position:absolute;left:-41px;top:0;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px}
+.tl-item h4{font-size:14px;font-weight:700;margin-bottom:3px}
+.tl-item .d{font-size:12.5px;color:var(--t2);line-height:1.55;margin-bottom:6px}
+
+/* role tabs */
+.rtabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.rtabs button{background:var(--sand);border:1px solid var(--bdr);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;color:var(--t2);padding:8px 16px;border-radius:20px;cursor:pointer;transition:all .15s}
+.rtabs button:hover{background:var(--card);border-color:var(--bdrd)}
+.rtabs button.active{background:var(--purple-bg);color:var(--purple);border-color:var(--purple-bg)}
+.rpanel{display:none;animation:fadeIn .2s ease}
+.rpanel.active{display:block}
+
+/* glossary grid */
+.glgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.glcard{background:var(--card);border:1px solid var(--bdr);border-radius:12px;padding:16px;cursor:pointer;transition:all .15s}
+.glcard:hover{border-color:var(--bdrd);box-shadow:0 2px 8px rgba(0,0,0,0.04)}
+.glcard h4{font-size:13px;font-weight:700;margin-bottom:3px;display:flex;align-items:center;gap:6px}
+.glcard .preview{font-size:11.5px;color:var(--t3);line-height:1.45}
+.glcard .detail{display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--bdr)}
+.glcard.open .detail{display:block}
+.glcard.open .preview{display:none}
+.glcard .detail .what{font-size:12.5px;color:var(--t2);line-height:1.55;margin-bottom:8px}
+.glcard .detail .setup{background:var(--sand);border-radius:6px;padding:8px 12px;margin-bottom:6px;font-size:11.5px;color:var(--t2);line-height:1.5}
+.glcard .detail .setup strong{color:var(--t1)}
+.glcard .detail .when{font-size:11.5px;color:var(--purple);font-weight:500}
+.glcard .expand{font-size:10px;color:var(--t4);float:right;margin-top:-16px}
+
+/* free vs pro table */
+.fvp{width:100%;border-collapse:separate;border-spacing:0;border-radius:12px;overflow:hidden;border:1px solid var(--bdr)}
+.fvp th{padding:12px 16px;font-size:11px;font-weight:700;text-align:left}
+.fvp th:first-child{background:var(--sand);color:var(--t3);width:45%}
+.fvp th:nth-child(2){background:var(--sand);color:var(--t2)}
+.fvp th:nth-child(3){background:var(--purple-bg);color:var(--purple)}
+.fvp td{padding:10px 16px;font-size:12.5px;color:var(--t2);border-top:1px solid var(--bdr)}
+.fvp td:first-child{font-weight:600;color:var(--t1)}
+.fvp tr:nth-child(even) td{background:rgba(250,247,242,0.5)}
+
+/* checklist */
+.chk{background:var(--card);border:1px solid var(--bdr);border-radius:10px;padding:14px 18px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .15s;user-select:none}
+.chk:hover{border-color:var(--bdrd)}
+.chk.done{opacity:0.5}
+.chk.done .box{background:var(--purple);border-color:var(--purple)}
+.chk.done .box::after{content:'✓';color:#fff;font-size:11px;font-weight:700}
+.chk .box{width:20px;height:20px;border:2px solid var(--bdrd);border-radius:5px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.chk .t{font-size:13px;color:var(--t2);line-height:1.45}
+.chk.done .t{text-decoration:line-through}
+.chk .t strong{color:var(--t1)}
+
+.slbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;margin-top:20px;padding-left:2px}
+
+/* pro tip callout */
+.protip{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.protip .tip{background:var(--card);border:1px solid var(--bdr);border-radius:10px;padding:16px;border-left:3px solid}
+.protip .tip h4{font-size:13px;font-weight:700;margin-bottom:4px}
+.protip .tip .d{font-size:12px;color:var(--t2);line-height:1.5}
+
+footer{text-align:center;padding:28px 0;font-size:11px;color:var(--tf)}
+
+@media(max-width:680px){
+  .mstrip,.compare,.spgrid,.glgrid,.protip{grid-template-columns:1fr}
+  .shell{padding:0 16px}
+}
+@media print{
+  nav,.pbar,.pn{display:none!important}
+  .page{display:block!important;page-break-after:always}
+  body{background:#fff}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<header>
+  <h1>the claude bootcamp</h1>
+  <p class="sub">from zero to power user — your practical guide to claude</p>
+</header>
+
+<div class="pbar"><div class="pfill" id="pf" style="width:11%"></div></div>
+<nav id="nav"></nav>
+
+<!-- ======================== TAB 0: GET STARTED ======================== -->
+<div class="page active" data-tab="get started">
+  <div class="sh"><div class="bar" style="background:var(--mint)"></div>
+    <h2>get started</h2>
+    <p class="sub">sign up, download, orient yourself, and meet the models — 5 minutes</p>
+  </div>
+
+  <div class="c">
+    <div class="hdr"><div class="num" style="background:var(--mint-bg);color:var(--mint)">1</div><h3>create your account</h3></div>
+    <p class="bod">go to <strong>claude.ai</strong> and sign up with your work email. if your company has a team plan, check your inbox for an invite link.</p>
+  </div>
+
+  <div class="c">
+    <div class="hdr"><div class="num" style="background:var(--mint-bg);color:var(--mint)">2</div><h3>download the desktop app</h3></div>
+    <p class="bod">go to <strong>claude.ai/download</strong> — Mac or Windows. the desktop app unlocks <strong>Cowork mode</strong>, which is where Claude goes from chatbot to actual assistant. you want this.</p>
+  </div>
+
+  <div class="c">
+    <div class="hdr"><div class="num" style="background:var(--mint-bg);color:var(--mint)">3</div><h3>check your plan</h3></div>
+    <p class="bod">profile icon (bottom-left) → <strong>Settings → Subscription</strong>. pro-only features are marked <span class="pro">PRO</span> throughout this guide.</p>
+  </div>
+
+  <div class="c">
+    <div class="hdr"><div class="num" style="background:var(--mint-bg);color:var(--mint)">4</div><h3>orient yourself</h3></div>
+    <p class="bod">→ <strong>left sidebar:</strong> conversations, Projects, <strong>Chat / Cowork toggle</strong> at top<br>
+    → <strong>top of chat:</strong> <strong>model picker</strong> dropdown (click to switch models)<br>
+    → <strong>bottom:</strong> message box + <strong>paperclip / +</strong> for file and image uploads<br>
+    → <strong>shortcuts:</strong> <strong>Cmd+N</strong> new chat · <strong>Cmd+Shift+N</strong> new Cowork · <strong>/</strong> quick actions</p>
+  </div>
+
+  <div class="c">
+    <div class="hdr"><div class="num" style="background:var(--mint-bg);color:var(--mint)">5</div><h3>the three models</h3></div>
+    <p class="bod">switch anytime via the model picker at the top of any chat:</p>
+  </div>
+
+  <div class="mstrip">
+    <div class="ms" style="border-top-color:var(--mint)"><h4>haiku</h4><div class="sp" style="color:var(--mint)">fastest</div><div class="d">quick Qs, reformatting, brainstorming</div></div>
+    <div class="ms" style="border-top-color:var(--blue)"><h4>sonnet</h4><div class="sp" style="color:var(--blue)">daily driver</div><div class="d">emails, analysis, writing — 80% of work</div></div>
+    <div class="ms" style="border-top-color:var(--purple)"><h4>opus</h4><div class="sp" style="color:var(--purple)">most capable <span class="pro">PRO</span></div><div class="d">deep analysis, exec comms, strategy</div></div>
+  </div>
+
+  <div class="c">
+    <div class="hdr"><div class="num" style="background:var(--mint-bg);color:var(--mint)">6</div><h3>your data is yours</h3></div>
+    <p class="bod">the question everyone asks: <strong>"is my stuff safe?"</strong> here's the short version:</p>
+    <p class="bod">→ Anthropic <strong>does not train on your conversations</strong> by default<br>
+    → connections (Gmail, Calendar) are <strong>authorized by you</strong> and can be revoked anytime in Settings → Connections<br>
+    → Claude can only access what you explicitly give it — files you upload, apps you connect, text you type<br>
+    → conversations are stored in your account. delete anytime from the sidebar</p>
+    <div class="tb" style="background:var(--mint-bg);color:var(--mint)"><strong>the rule:</strong> Claude sees what you show it. nothing more. if you disconnect Gmail, it loses access immediately.</div>
+  </div>
+
+  <div class="c">
+    <div class="hdr"><div class="num" style="background:var(--mint-bg);color:var(--mint)">7</div><h3>try something right now</h3></div>
+    <p class="bod">don't just read this guide — open Claude and try one of these:</p>
+    <div class="pb"><div class="lbl">chat</div><div class="txt">"I'm new here. I'm a [your role] at [your company]. what are the first 3 things I should set up to get the most out of you?"</div></div>
+    <div class="pb"><div class="lbl">cowork</div><div class="txt">"create a one-page cheat sheet of keyboard shortcuts and tips for someone who just started using you. save it as a PDF."</div></div>
+    <div class="pb"><div class="lbl">quick win</div><div class="txt">paste any email you're drafting → "make this shorter and punchier. keep my voice."</div></div>
+  </div>
+
+  <div class="pn"><div class="sp"></div><button onclick="go(1)">next: make it yours →</button></div>
+</div>
+
+<!-- ======================== TAB 1: MAKE IT YOURS ======================== -->
+<div class="page" data-tab="make it yours">
+  <div class="sh"><div class="bar" style="background:var(--purple)"></div>
+    <h2>make it yours</h2>
+    <p class="sub">profile, memory, and voice — teach Claude who you are</p>
+  </div>
+
+  <div class="c">
+    <div class="hdr"><div class="num" style="background:var(--purple-bg);color:var(--purple)">1</div><h3>set your profile</h3></div>
+    <p class="bod"><strong>Settings → Profile.</strong> name + role + what you work on + how you like things written. this carries into every conversation.</p>
+    <div class="pb"><div class="lbl">example</div><div class="txt">"i'm Sierra, a CSM at a SaaS company. i manage 30 enterprise accounts — QBR prep, customer emails, stakeholder updates. concise and warm, not corporate."</div></div>
+  </div>
+
+  <div class="c">
+    <div class="hdr"><div class="num" style="background:var(--purple-bg);color:var(--purple)">2</div><h3>turn on memory</h3></div>
+    <p class="bod"><strong>Settings → Memory → on.</strong> Claude remembers across conversations. say "remember my team uses Notion" or "forget that" to manage it.</p>
+  </div>
+
+  <div class="c">
+    <div class="hdr"><div class="num" style="background:var(--purple-bg);color:var(--purple)">3</div><h3>train your writing voice</h3><span class="pro">PRO</span></div>
+    <p class="bod">the most impactful thing you can set up. three steps:</p>
+    <p class="bod"><strong>generate:</strong> paste 3–5 sent emails into a chat (or connect Gmail in Cowork for 30+ emails automatically):</p>
+    <div class="pb"><div class="lbl">prompt</div><div class="txt">"analyze my writing style — tone, formality, sentence structure, how I open/close, phrases I default to. create a writing style profile I can save."</div></div>
+    <p class="bod"><strong>save:</strong> copy the profile → <strong>Settings → Writing Style → Create Custom</strong> → paste → save. <em>don't just read it and close the chat.</em></p>
+    <p class="bod"><strong>result:</strong> every conversation now sounds like you, not AI.</p>
+    <div class="tb" style="background:var(--yellow-bg);color:var(--yellow)"><strong>free plan:</strong> paste your profile at the start of important conversations: "use this writing style: [paste]"</div>
+  </div>
+
+  <div class="pn"><button class="sec" onclick="go(0)">← back</button><div class="sp"></div><button onclick="go(2)">next: what Claude can do →</button></div>
+</div>
+
+<!-- ======================== TAB 2: WHAT CLAUDE CAN DO ======================== -->
+<div class="page" data-tab="what Claude can do">
+  <div class="sh"><div class="bar" style="background:var(--blue)"></div>
+    <h2>what Claude can do</h2>
+    <p class="sub">three modes, four superpowers — and where to find each one</p>
+  </div>
+
+  <div class="compare">
+    <div class="cc" style="border-top-color:var(--mint)">
+      <h3>chat</h3>
+      <div class="tag" style="color:var(--mint)">web + desktop</div>
+      <p class="desc">back-and-forth conversation. Q&A, writing, analysis, brainstorming.</p>
+      <ul>
+        <li>write and edit text</li>
+        <li>create artifacts (visual outputs)</li>
+        <li>upload files and images</li>
+        <li>search the web</li>
+      </ul>
+    </div>
+    <div class="cc" style="border-top-color:var(--purple)">
+      <h3>cowork</h3>
+      <div class="tag" style="color:var(--purple)">desktop app only</div>
+      <p class="desc">you delegate, Claude executes. autonomous — files, docs, apps.</p>
+      <ul>
+        <li>create Word, PPT, Excel, PDF</li>
+        <li>connect Gmail, Calendar, Slack</li>
+        <li>read + organize your files</li>
+        <li>multi-step workflows</li>
+      </ul>
+    </div>
+    <div class="cc" style="border-top-color:var(--orange)">
+      <h3>code</h3>
+      <div class="tag" style="color:var(--orange)">devs only</div>
+      <p class="desc">command-line for engineers. skip this if you're not a developer.</p>
+      <ul>
+        <li>write and debug code</li>
+        <li>navigate codebases</li>
+        <li>commits and PRs</li>
+        <li>terminal commands</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="tb" style="background:var(--purple-bg);color:var(--purple);margin-bottom:20px"><strong>chat = conversation. cowork = delegation.</strong> switch via the <strong>toggle at the top of the left sidebar</strong> in the desktop app.</div>
+
+  <div class="spgrid">
+    <div class="spcard" style="border-left-color:var(--orange)">
+      <h4><i class="ph ph-image" style="color:var(--orange)"></i> image understanding</h4>
+      <div class="d">Claude sees photos, screenshots, charts, handwriting. paste (Cmd+V), attach via paperclip, or point Cowork to a file.</div>
+      <div class="where" style="background:var(--mint-bg);color:var(--mint)">chat + cowork</div>
+    </div>
+    <div class="spcard" style="border-left-color:var(--blue)">
+      <h4><i class="ph ph-globe" style="color:var(--blue)"></i> web search</h4>
+      <div class="d">real-time internet search. just ask, or say "search for..." Cowork weaves it into multi-step tasks.</div>
+      <div class="where" style="background:var(--mint-bg);color:var(--mint)">chat + cowork</div>
+    </div>
+    <div class="spcard" style="border-left-color:var(--purple)">
+      <h4><i class="ph ph-sparkle" style="color:var(--purple)"></i> artifacts</h4>
+      <div class="d">"create" or "build" → visual outputs in a side panel. in Cowork, you get actual files saved to your folder instead.</div>
+      <div class="where" style="background:var(--purple-bg);color:var(--purple)">chat (panel) · cowork (files)</div>
+    </div>
+    <div class="spcard" style="border-left-color:var(--yellow)">
+      <h4><i class="ph ph-file-arrow-up" style="color:var(--yellow)"></i> files</h4>
+      <div class="d">Chat: drag into conversation. Cowork: reads from your folder and saves new files there — no dragging needed.</div>
+      <div class="where" style="background:var(--yellow-bg);color:var(--yellow)">chat (upload) · cowork (folder)</div>
+    </div>
+  </div>
+
+  <div class="tb" style="background:var(--mint-bg);color:var(--mint)"><strong>Cowork folder:</strong> create <strong>Documents → Claude-Work</strong>, select it when Cowork asks. Claude saves everything there.</div>
+
+  <div class="c" style="margin-top:4px">
+    <h3>getting stuff out of Claude</h3>
+    <p class="bod">→ <strong>Chat artifacts:</strong> click the artifact → copy button (top-right), or "download this as a PDF / Word doc"<br>
+    → <strong>Cowork files:</strong> already saved to your folder — open, email, upload wherever<br>
+    → <strong>text:</strong> highlight any response → copy. or say "give me just the final version, nothing else"<br>
+    → <strong>sharing:</strong> three dots on any conversation → Share → creates a link anyone can view</p>
+  </div>
+
+  <div class="pn"><button class="sec" onclick="go(1)">← back</button><div class="sp"></div><button onclick="go(3)">next: chief of staff →</button></div>
+</div>
+
+<!-- ======================== TAB 3: CHIEF OF STAFF ======================== -->
+<div class="page" data-tab="chief of staff">
+  <div class="sh"><div class="bar" style="background:var(--yellow)"></div>
+    <h2>Claude as your chief of staff</h2>
+    <p class="sub">the most valuable setup — turn Claude into someone who runs your day</p>
+  </div>
+
+  <div class="c">
+    <h3>one-time setup (15 min)</h3>
+    <p class="bod"><strong>1.</strong> connect <strong>Gmail + Calendar</strong> — Settings → Connections (Claude only reads what you authorize — revoke anytime)<br>
+    <strong>2.</strong> save your <strong>writing style</strong> (see "make it yours")<br>
+    <strong>3.</strong> create a <strong>"chief of staff" project</strong> <span class="pro">PRO</span>:</p>
+    <div class="pb"><div class="lbl">system prompt</div><div class="txt">"you're my chief of staff. I'm [name], [role] at [company]. priorities: [2-3 things]. check my calendar and email for briefings. match my writing style. be direct, flag what's urgent, skip fluff."</div></div>
+    <div class="tb" style="background:var(--yellow-bg);color:var(--yellow)"><strong>free plan:</strong> paste context at the start of each session: "you're my chief of staff today. here's my context: [paste]."</div>
+  </div>
+
+  <p class="intro" style="font-weight:600;margin-bottom:4px">your daily rhythms</p>
+
+  <div class="tl">
+    <div class="tl-item">
+      <div class="tl-icon" style="background:var(--yellow-bg);color:var(--yellow)"><i class="ph ph-sun"></i></div>
+      <h4>morning briefing</h4>
+      <div class="d">start every day here.</div>
+      <div class="pb" style="margin-top:4px"><div class="lbl">prompt</div><div class="txt">"morning briefing. what's on my calendar today? for each meeting — who's there, what should I know. check email — anything urgent before my first call? anything I haven't responded to?"</div></div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-icon" style="background:var(--blue-bg);color:var(--blue)"><i class="ph ph-envelope-simple"></i></div>
+      <h4>email triage</h4>
+      <div class="d">sort your inbox, draft replies.</div>
+      <div class="pb" style="margin-top:4px"><div class="lbl">prompt</div><div class="txt">"go through unread emails. sort: (1) needs response today, (2) can wait, (3) FYI. draft replies for urgent ones in my voice. flag anything sensitive."</div></div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-icon" style="background:var(--purple-bg);color:var(--purple)"><i class="ph ph-calendar-check"></i></div>
+      <h4>meeting prep</h4>
+      <div class="d">one-page brief before any important call.</div>
+      <div class="pb" style="margin-top:4px"><div class="lbl">prompt</div><div class="txt">"meeting with [person] at 2pm. search recent news, check our email history. prep: who they are, what we last discussed, what to bring up, risks."</div></div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-icon" style="background:var(--orange-bg);color:var(--orange)"><i class="ph ph-moon"></i></div>
+      <h4>end-of-day wrap</h4>
+      <div class="d">surface commitments, prep tomorrow.</div>
+      <div class="pb" style="margin-top:4px"><div class="lbl">prompt</div><div class="txt">"what did I commit to today? draft follow-up emails I owe. what's first tomorrow?"</div></div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-icon" style="background:var(--mint-bg);color:var(--mint)"><i class="ph ph-calendar-blank"></i></div>
+      <h4>weekly review (friday)</h4>
+      <div class="d">look ahead, catch dropped balls.</div>
+      <div class="pb" style="margin-top:4px"><div class="lbl">prompt</div><div class="txt">"weekly review. next week's calendar — what needs prep? any conflicts? anything from this week I said I'd do but haven't?"</div></div>
+    </div>
+  </div>
+
+  <div class="tb" style="background:var(--purple-bg);color:var(--purple)"><strong>compound effect:</strong> with memory on, Claude learns your priorities, rhythms, and who matters. after two weeks it's noticeably more tailored. automate: "create a scheduled task for my morning briefing every weekday at 8am."</div>
+
+  <div class="pn"><button class="sec" onclick="go(2)">← back</button><div class="sp"></div><button onclick="go(4)">next: your workspace →</button></div>
+</div>
+
+<!-- ======================== TAB 4: YOUR WORKSPACE ======================== -->
+<div class="page" data-tab="your workspace">
+  <div class="sh"><div class="bar" style="background:var(--mint)"></div>
+    <h2>your workspace</h2>
+    <p class="sub">projects, connections, and skills — the deeper configuration</p>
+  </div>
+
+  <div class="c">
+    <div class="hdr"><div class="num" style="background:var(--mint-bg);color:var(--mint)">1</div><h3>projects</h3><span class="pro">PRO</span></div>
+    <p class="bod">persistent workspaces. set context once — every chat inside already knows. add knowledge files (PDFs, docs, spreadsheets) for Claude to reference.</p>
+    <p class="bod"><strong>set up:</strong> sidebar → <strong>Projects → New Project</strong> → system prompt + upload files.</p>
+    <div class="pb"><div class="lbl">example: QBR prep</div><div class="txt">"you help me prep QBRs. I'm a CSM. include: usage metrics, health score, wins, risks, next steps. confident, not salesy. always include a slide-ready summary."</div></div>
+    <div class="tb" style="background:var(--yellow-bg);color:var(--yellow)"><strong>power move:</strong> start a chat first: "help me brainstorm what context you'd need to be the perfect assistant for [task]. ask me questions." use that to write your prompt.</div>
+  </div>
+
+  <div class="c">
+    <div class="hdr"><div class="num" style="background:var(--mint-bg);color:var(--mint)">2</div><h3>connections (MCP)</h3></div>
+    <p class="bod">how Claude plugs into your tools. <strong>Settings → Connections</strong> → authorize apps. or just ask Claude to do something that needs one and it'll prompt you.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+      <div class="tb" style="background:var(--blue-bg);color:var(--blue);margin:0;font-size:12px"><strong>Gmail</strong> — read, draft, search, style analysis</div>
+      <div class="tb" style="background:var(--mint-bg);color:var(--mint);margin:0;font-size:12px"><strong>Calendar</strong> — schedule, prep, free time</div>
+      <div class="tb" style="background:var(--purple-bg);color:var(--purple);margin:0;font-size:12px"><strong>Slack</strong> — channels, threads, drafts</div>
+      <div class="tb" style="background:var(--orange-bg);color:var(--orange);margin:0;font-size:12px"><strong>Notes / iMessage</strong> — read, create, send</div>
+    </div>
+  </div>
+
+  <div class="c">
+    <div class="hdr"><div class="num" style="background:var(--mint-bg);color:var(--mint)">3</div><h3>skills</h3></div>
+    <p class="bod"><strong>built-in:</strong> Word, PowerPoint, Excel, PDF — just ask naturally. "write me a proposal" → .docx. "build a deck" → .pptx.</p>
+    <p class="bod"><strong>custom:</strong> for anything you repeat. "create a skill called 'weekly-report' — wins, blockers, priorities. 3-5 items each, direct tone." Claude auto-detects it later, or you say "use my weekly-report skill."</p>
+    <p class="bod"><strong>projects vs skills:</strong> projects = context (what to know). skills = instructions (how to do it). use both.</p>
+  </div>
+
+  <div class="pn"><button class="sec" onclick="go(3)">← back</button><div class="sp"></div><button onclick="go(5)">next: use cases + writing →</button></div>
+</div>
+
+<!-- ======================== TAB 5: USE CASES + WRITING ======================== -->
+<div class="page" data-tab="use cases + writing">
+  <div class="sh"><div class="bar" style="background:var(--pink)"></div>
+    <h2>use cases + writing</h2>
+    <p class="sub">role-specific examples, audience tricks, and the prompting cheat sheet</p>
+  </div>
+
+  <p class="intro" style="font-weight:600;margin-bottom:8px">pick your role</p>
+
+  <div class="rtabs" id="rtabs">
+    <button class="active" onclick="showRole(0)"><i class="ph ph-pencil-line"></i> writer</button>
+    <button onclick="showRole(1)"><i class="ph ph-users"></i> CSM / AM</button>
+    <button onclick="showRole(2)"><i class="ph ph-chart-bar"></i> marketing</button>
+    <button onclick="showRole(3)"><i class="ph ph-megaphone"></i> sales</button>
+    <button onclick="showRole(4)"><i class="ph ph-house"></i> personal</button>
+  </div>
+
+  <div class="rpanel active" id="rp0">
+    <div class="c">
+      <h3>drafter / writer</h3>
+      <p class="bod">blog posts, case studies, comms, social. upload your style guide as a knowledge file for brand matching.</p>
+      <div class="pb"><div class="lbl">try</div><div class="txt">"write a LinkedIn post announcing our Series B. excited but not cringey. under 150 words. hook that isn't a question."</div></div>
+      <div class="pb"><div class="lbl">try</div><div class="txt">"rewrite this case study — tighten the narrative, lead with the result, under 800 words."</div></div>
+    </div>
+  </div>
+  <div class="rpanel" id="rp1">
+    <div class="c">
+      <h3>CSM / account manager</h3>
+      <p class="bod">QBR prep, renewals, health scores, research. set up a project per account.</p>
+      <div class="pb"><div class="lbl">try</div><div class="txt">"here's Acme's usage data. flag concerning trends, draft a QBR exec summary, suggest 3 expansion opportunities."</div></div>
+      <div class="pb"><div class="lbl">try</div><div class="txt">"renewal check-in to Sarah — warm, mention their 40% team growth might mean more seats."</div></div>
+    </div>
+  </div>
+  <div class="rpanel" id="rp2">
+    <div class="c">
+      <h3>marketing</h3>
+      <p class="bod">campaigns, competitive intel, sequences, copy. Cowork builds full assets in one shot.</p>
+      <div class="pb"><div class="lbl">try</div><div class="txt">"5-email nurture for trial users. helpful not pushy, under 150 words each, clear CTA."</div></div>
+      <div class="pb"><div class="lbl">try</div><div class="txt">"research [competitor] — positioning, pricing, recent launches. one-page competitive brief."</div></div>
+    </div>
+  </div>
+  <div class="rpanel" id="rp3">
+    <div class="c">
+      <h3>sales / BD</h3>
+      <p class="bod">prospecting, outreach, meeting prep, proposals. connect Gmail to draft in your voice.</p>
+      <div class="pb"><div class="lbl">try</div><div class="txt">"research [company] — what they do, news, key people, pain points. draft a cold email to their VP of Ops."</div></div>
+      <div class="pb"><div class="lbl">try</div><div class="txt">"post-demo follow-up — summarize what we discussed, propose next steps. keep it tight."</div></div>
+    </div>
+  </div>
+  <div class="rpanel" id="rp4">
+    <div class="c">
+      <h3>personal life</h3>
+      <p class="bod">→ <strong>travel:</strong> "5-day Italy trip, Rome + Amalfi, $3k, no tourist traps"<br>
+      → <strong>meals:</strong> "weeknight dinners, no dairy, under 30 min"<br>
+      → <strong>learning:</strong> "explain 401k matching like I'm 25"<br>
+      → <strong>admin:</strong> upload a confusing bill → "explain this and what to do"<br>
+      → <strong>images:</strong> photo of whiteboard, recipe, foreign menu → instant read</p>
+    </div>
+  </div>
+
+  <p class="intro" style="font-weight:600;margin-bottom:8px;margin-top:24px">writing cheat sheet</p>
+
+  <div class="protip">
+    <div class="tip" style="border-left-color:var(--pink)">
+      <h4>tell Claude who's reading</h4>
+      <div class="d">same info, different audience = completely different output. "email to my VP — data-driven, 4 sentences" vs "Slack to my team — casual, just the key changes."</div>
+    </div>
+    <div class="tip" style="border-left-color:var(--blue)">
+      <h4>the formula</h4>
+      <div class="d"><strong>role + task + audience + format + constraints.</strong> "CSM, follow-up email, customer who went silent, warm but professional, max 100 words."</div>
+    </div>
+    <div class="tip" style="border-left-color:var(--purple)">
+      <h4>ask for options</h4>
+      <div class="d"><strong>"give me 3 versions"</strong> — never accept draft one. ask for variations in tone, length, or approach. pick the best, iterate from there.</div>
+    </div>
+    <div class="tip" style="border-left-color:var(--mint)">
+      <h4>ask questions first</h4>
+      <div class="d"><strong>"before you start, ask me 5 questions"</strong> — Claude will ask what it needs to nail it. way better than a vague prompt and a mediocre first draft.</div>
+    </div>
+    <div class="tip" style="border-left-color:var(--orange)">
+      <h4>demand accuracy</h4>
+      <div class="d"><strong>"confirm this is 100% accurate before giving me the final"</strong> — Claude will double-check its own work. for anything with numbers, facts, or names — always ask it to verify.</div>
+    </div>
+    <div class="tip" style="border-left-color:var(--yellow)">
+      <h4>iterate, don't accept</h4>
+      <div class="d">the power-user secret: <strong>never accept the first draft.</strong> say "make it shorter" · "try a warmer tone" · "keep paragraphs 2-3 but rewrite the opening." each round gets dramatically better. 3 rounds beats 1 perfect prompt every time.</div>
+    </div>
+    <div class="tip" style="border-left-color:var(--pink)">
+      <h4>quick tricks</h4>
+      <div class="d"><strong>"be concise" · "no preamble" · "shorter" · "push back on me" · "what's missing?"</strong> — all work exactly like you'd expect.</div>
+    </div>
+  </div>
+
+  <div class="pn"><button class="sec" onclick="go(4)">← back</button><div class="sp"></div><button onclick="go(6)">next: when things go wrong →</button></div>
+</div>
+
+<!-- ======================== TAB 6: TROUBLESHOOTING ======================== -->
+<div class="page" data-tab="when things go wrong">
+  <div class="sh"><div class="bar" style="background:var(--orange)"></div>
+    <h2>when things go wrong</h2>
+    <p class="sub">common problems and how to fix them</p>
+  </div>
+
+  <div class="c">
+    <h3><i class="ph ph-warning-circle" style="color:var(--orange)"></i> too long / too generic</h3>
+    <p class="bod"><strong>"be concise"</strong> or <strong>"max 3 sentences"</strong> or just <strong>"shorter."</strong> add <strong>"no preamble, no summary"</strong> to cut filler. more specifics in your prompt = less guessing.</p>
+  </div>
+  <div class="c">
+    <h3><i class="ph ph-warning-circle" style="color:var(--orange)"></i> sounds like AI</h3>
+    <p class="bod">quick fix: <strong>"write like a real person."</strong> permanent fix: train your voice and save a custom style. the words "delve" and "leverage" disappear once you do.</p>
+  </div>
+  <div class="c">
+    <h3><i class="ph ph-warning-circle" style="color:var(--orange)"></i> misunderstood me</h3>
+    <p class="bod">don't start over. <strong>"no, I meant..."</strong> or <strong>"keep everything but change..."</strong> Claude adjusts fast.</p>
+  </div>
+  <div class="c">
+    <h3><i class="ph ph-warning-circle" style="color:var(--orange)"></i> hit the limit</h3>
+    <p class="bod"><strong>free:</strong> wait a few hours. <strong>pro:</strong> switch to Haiku (separate limit). fewer, more detailed messages beats rapid back-and-forth.</p>
+  </div>
+  <div class="c">
+    <h3><i class="ph ph-warning-circle" style="color:var(--orange)"></i> lost the thread</h3>
+    <p class="bod"><strong>Cmd+N</strong> for new topics. re-state context in long convos. use <strong>projects</strong> <span class="pro">PRO</span> to persist context.</p>
+  </div>
+  <div class="c">
+    <h3><i class="ph ph-warning-circle" style="color:var(--orange)"></i> conversation hygiene</h3>
+    <p class="bod">the most common beginner mistake: using one giant chat for everything. here's how to think about it:</p>
+    <p class="bod">→ <strong>new topic = new chat</strong> (Cmd+N). Claude doesn't carry context between conversations unless you use Memory or Projects<br>
+    → <strong>same task, keep going.</strong> "make it shorter" / "try a different angle" / "add a section on X" — all work great in the same chat<br>
+    → <strong>long chats lose context.</strong> after 20+ back-and-forths, Claude may forget what you said early on. start fresh and re-paste key context<br>
+    → <strong>your history lives in the sidebar.</strong> every conversation is saved — search it anytime. delete what you don't need</p>
+  </div>
+  <div class="c">
+    <h3><i class="ph ph-warning-circle" style="color:var(--orange)"></i> Cowork went off track</h3>
+    <p class="bod">just delete the file — it's a normal file on your computer. say <strong>"that's not what I wanted"</strong> to redirect. you can also type corrections while Cowork is still working.</p>
+  </div>
+
+  <div class="pn"><button class="sec" onclick="go(5)">← back</button><div class="sp"></div><button onclick="go(7)">next: reference →</button></div>
+</div>
+
+<!-- ======================== TAB 7: REFERENCE ======================== -->
+<div class="page" data-tab="reference">
+  <div class="sh"><div class="bar" style="background:var(--blue)"></div>
+    <h2>reference</h2>
+    <p class="sub">glossary + free vs pro — tap any card to expand</p>
+  </div>
+
+  <div class="glgrid">
+    <div class="glcard" onclick="this.classList.toggle('open')">
+      <h4><i class="ph ph-sparkle" style="color:var(--purple)"></i> artifacts</h4>
+      <div class="preview">visual outputs Claude builds in chat</div>
+      <div class="detail">
+        <div class="what">tables, charts, diagrams, calculators — in a side panel. say "create" or "build." in Cowork you get actual files instead.</div>
+        <div class="when">→ use when you want something visual to iterate on</div>
+      </div>
+    </div>
+    <div class="glcard" onclick="this.classList.toggle('open')">
+      <h4><i class="ph ph-robot" style="color:var(--mint)"></i> agents</h4>
+      <div class="preview">AI that acts, not just answers</div>
+      <div class="detail">
+        <div class="what">"agent" = AI that does things autonomously — browsing, reading files, creating docs, chaining steps. the "agent startup" hype is the same idea at scale. you don't build agents — you use one every time you use Cowork.</div>
+        <div class="setup"><strong>prompt tip:</strong> describe the end result, not the steps. "find emails needing replies, draft responses" not "open Gmail, then read each one, then..."</div>
+        <div class="setup"><strong>can't do:</strong> access apps you haven't connected · irreversible actions without approval · background monitoring · be 100% accurate (always review)</div>
+        <div class="when">→ you're already using agents in Cowork</div>
+      </div>
+    </div>
+    <div class="glcard" onclick="this.classList.toggle('open')">
+      <h4><i class="ph ph-plug" style="color:var(--blue)"></i> MCP</h4>
+      <div class="preview">how Claude connects to apps</div>
+      <div class="detail">
+        <div class="what">Model Context Protocol — connects Claude to Gmail, Calendar, Slack, etc.</div>
+        <div class="setup"><strong>setup:</strong> Settings → Connections → authorize. Claude also suggests connections when needed.</div>
+        <div class="when">→ use when Claude needs your real data</div>
+      </div>
+    </div>
+    <div class="glcard" onclick="this.classList.toggle('open')">
+      <h4><i class="ph ph-folder-open" style="color:var(--yellow)"></i> projects</h4>
+      <div class="preview">persistent context <span class="pro">PRO</span></div>
+      <div class="detail">
+        <div class="what">workspaces with instructions + uploaded files. every conversation inside inherits context.</div>
+        <div class="setup"><strong>setup:</strong> sidebar → Projects → New Project → system prompt + upload docs.</div>
+        <div class="when">→ use for recurring work</div>
+      </div>
+    </div>
+    <div class="glcard" onclick="this.classList.toggle('open')">
+      <h4><i class="ph ph-magic-wand" style="color:var(--pink)"></i> skills</h4>
+      <div class="preview">reusable instruction sets</div>
+      <div class="detail">
+        <div class="what">built-in: Word, PPT, Excel, PDF. custom: your own templates. "create a skill called [name]."</div>
+        <div class="setup"><strong>projects</strong> = context (what to know). <strong>skills</strong> = instructions (how to do it).</div>
+        <div class="when">→ use for repeated task types</div>
+      </div>
+    </div>
+    <div class="glcard" onclick="this.classList.toggle('open')">
+      <h4><i class="ph ph-memory" style="color:var(--mint)"></i> memory</h4>
+      <div class="preview">Claude remembers across chats</div>
+      <div class="detail">
+        <div class="what">remembers preferences, facts, context over time. "remember X" / "forget X."</div>
+        <div class="setup"><strong>setup:</strong> Settings → Memory → on.</div>
+        <div class="when">→ always leave it on</div>
+      </div>
+    </div>
+    <div class="glcard" onclick="this.classList.toggle('open')">
+      <h4><i class="ph ph-text-aa" style="color:var(--purple)"></i> writing styles</h4>
+      <div class="preview">saved voice <span class="pro">PRO</span></div>
+      <div class="detail">
+        <div class="what">saved tone/voice from your own writing samples. free plan: paste into conversations manually.</div>
+        <div class="setup"><strong>setup:</strong> Settings → Writing Style → Create Custom → paste profile.</div>
+        <div class="when">→ makes Claude sound like you</div>
+      </div>
+    </div>
+    <div class="glcard" onclick="this.classList.toggle('open')">
+      <h4><i class="ph ph-chat-circle-dots" style="color:var(--yellow)"></i> context window</h4>
+      <div class="preview">how much Claude "sees"</div>
+      <div class="detail">
+        <div class="what">every conversation has a limit. very long chats may lose early context. Cmd+N for new topics.</div>
+        <div class="setup"><strong>manage:</strong> new chat per topic. re-state context in long sessions. projects persist what matters.</div>
+        <div class="when">→ start fresh if Claude seems confused</div>
+      </div>
+    </div>
+  </div>
+
+  <p class="intro" style="font-weight:600;margin-bottom:8px;margin-top:20px">free vs pro</p>
+
+  <table class="fvp">
+    <tr><th>feature</th><th>free</th><th>pro / team</th></tr>
+    <tr><td>chat + Cowork</td><td>✓</td><td>✓ (5x more messages)</td></tr>
+    <tr><td>haiku + sonnet</td><td>✓</td><td>✓</td></tr>
+    <tr><td>opus</td><td>—</td><td>✓</td></tr>
+    <tr><td>web search + images</td><td>✓</td><td>✓</td></tr>
+    <tr><td>file uploads + artifacts</td><td>✓</td><td>✓ (larger)</td></tr>
+    <tr><td>MCP connections</td><td>✓</td><td>✓</td></tr>
+    <tr><td>built-in skills</td><td>✓</td><td>✓</td></tr>
+    <tr><td>projects + knowledge files</td><td>—</td><td>✓</td></tr>
+    <tr><td>custom writing styles</td><td>—</td><td>✓</td></tr>
+  </table>
+
+  <div class="c" style="margin-top:14px">
+    <h3>is pro worth it?</h3>
+    <p class="bod">if you use Claude daily — yes. free runs out fast. projects are a game-changer. Opus is noticeably better. if your company offers Team — no-brainer.</p>
+  </div>
+
+  <div class="pn"><button class="sec" onclick="go(6)">← back</button><div class="sp"></div><button onclick="go(8)">next: your checklist →</button></div>
+</div>
+
+<!-- ======================== TAB 8: CHECKLIST ======================== -->
+<div class="page" data-tab="your checklist">
+  <div class="sh"><div class="bar" style="background:var(--purple)"></div>
+    <h2>your power-user checklist</h2>
+    <p class="sub">tap to check off — do all of these and you're in the top 5%</p>
+  </div>
+
+  <div class="slbl" style="color:var(--mint);margin-top:0">the basics — do now</div>
+  <div class="chk" onclick="this.classList.toggle('done')"><div class="box"></div><div class="t"><strong>create account</strong> at claude.ai</div></div>
+  <div class="chk" onclick="this.classList.toggle('done')"><div class="box"></div><div class="t"><strong>download desktop app</strong> — unlocks Cowork</div></div>
+  <div class="chk" onclick="this.classList.toggle('done')"><div class="box"></div><div class="t"><strong>check your plan</strong> — Settings → Subscription</div></div>
+  <div class="chk" onclick="this.classList.toggle('done')"><div class="box"></div><div class="t"><strong>fill out profile</strong> — name, role, how you work</div></div>
+  <div class="chk" onclick="this.classList.toggle('done')"><div class="box"></div><div class="t"><strong>turn on memory</strong> — Settings → Memory</div></div>
+  <div class="chk" onclick="this.classList.toggle('done')"><div class="box"></div><div class="t"><strong>find the UI</strong> — model picker, uploads, Chat/Cowork toggle</div></div>
+
+  <div class="slbl" style="color:var(--blue)">level up — first week</div>
+  <div class="chk" onclick="this.classList.toggle('done')"><div class="box"></div><div class="t"><strong>try all three models</strong> — same question to Haiku, Sonnet, Opus</div></div>
+  <div class="chk" onclick="this.classList.toggle('done')"><div class="box"></div><div class="t"><strong>upload a file</strong> — drag a PDF in, ask for a summary</div></div>
+  <div class="chk" onclick="this.classList.toggle('done')"><div class="box"></div><div class="t"><strong>paste a screenshot</strong> — Cmd+V, ask about it</div></div>
+  <div class="chk" onclick="this.classList.toggle('done')"><div class="box"></div><div class="t"><strong>create an artifact</strong> — "create a comparison table of..."</div></div>
+  <div class="chk" onclick="this.classList.toggle('done')"><div class="box"></div><div class="t"><strong>try Cowork</strong> — ask for a Word doc or spreadsheet</div></div>
+  <div class="chk" onclick="this.classList.toggle('done')"><div class="box"></div><div class="t"><strong>connect Gmail + Calendar</strong> — unlocks the chief of staff</div></div>
+  <div class="chk" onclick="this.classList.toggle('done')"><div class="box"></div><div class="t"><strong>ask for 3 versions</strong> — never accept draft one</div></div>
+
+  <div class="slbl" style="color:var(--purple)">power user</div>
+  <div class="chk" onclick="this.classList.toggle('done')"><div class="box"></div><div class="t"><strong>train your voice</strong> — style profile from emails → save as custom style</div></div>
+  <div class="chk" onclick="this.classList.toggle('done')"><div class="box"></div><div class="t"><strong>set up chief of staff</strong> — project + connections + morning briefing</div></div>
+  <div class="chk" onclick="this.classList.toggle('done')"><div class="box"></div><div class="t"><strong>create a project</strong> — custom prompt + knowledge files</div></div>
+  <div class="chk" onclick="this.classList.toggle('done')"><div class="box"></div><div class="t"><strong>create a custom skill</strong> — for a weekly task</div></div>
+  <div class="chk" onclick="this.classList.toggle('done')"><div class="box"></div><div class="t"><strong>say "ask me 5 questions first"</strong> — let Claude clarify before it writes</div></div>
+  <div class="chk" onclick="this.classList.toggle('done')"><div class="box"></div><div class="t"><strong>say "confirm 100% accuracy"</strong> — for anything with facts or numbers</div></div>
+  <div class="chk" onclick="this.classList.toggle('done')"><div class="box"></div><div class="t"><strong>delegate a real task</strong> — something you'd spend 30+ min on</div></div>
+  <div class="chk" onclick="this.classList.toggle('done')"><div class="box"></div><div class="t"><strong>ask Claude to push back</strong> — "what am I missing?"</div></div>
+  <div class="chk" onclick="this.classList.toggle('done')"><div class="box"></div><div class="t"><strong>teach someone else</strong> — best way to lock it in</div></div>
+
+  <div class="c" style="margin-top:20px;background:var(--purple-bg);border-color:var(--purple)">
+    <h3 style="color:var(--purple)">you're ready</h3>
+    <p class="bod" style="color:var(--purple)">use it for everything for two weeks. start with rewriting an email. end with full workflow delegation. you'll wonder how you worked without it.</p>
+  </div>
+
+  <div class="pn"><button class="sec" onclick="go(7)">← back</button><div class="sp"></div></div>
+</div>
+
+</div>
+<footer>the claude bootcamp — built for non-technical humans who want to be power users</footer>
+
+<script>
+const tabs=['get started','make it yours','what Claude can do','chief of staff','your workspace','use cases + writing','when things go wrong','reference','your checklist'];
+const nav=document.getElementById('nav');
+const pages=document.querySelectorAll('.page');
+const pf=document.getElementById('pf');
+tabs.forEach((t,i)=>{const b=document.createElement('button');b.textContent=t;if(i===0)b.classList.add('active');b.onclick=()=>go(i);nav.appendChild(b)});
+function go(i){document.querySelectorAll('nav button').forEach((b,j)=>b.classList.toggle('active',j===i));pages.forEach((p,j)=>p.classList.toggle('active',j===i));pf.style.width=((i+1)/tabs.length*100)+'%';window.scrollTo({top:0,behavior:'smooth'});nav.children[i].scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'})}
+function showRole(n){document.querySelectorAll('.rtabs button').forEach((b,i)=>b.classList.toggle('active',i===n));document.querySelectorAll('.rpanel').forEach((p,i)=>p.classList.toggle('active',i===n))}
+document.addEventListener('keydown',e=>{const cur=[...pages].findIndex(p=>p.classList.contains('active'));if(e.key==='ArrowRight'&&cur<tabs.length-1)go(cur+1);if(e.key==='ArrowLeft'&&cur>0)go(cur-1)});
+</script>
+</body>
+</html>
